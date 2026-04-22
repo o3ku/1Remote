@@ -1,4 +1,4 @@
-﻿using _1RM.Model;
+using _1RM.Model;
 using _1RM.Service.DataSource;
 using _1RM.Service.DataSource.Model;
 using _1RM.Utils;
@@ -68,6 +68,16 @@ namespace _1RM.Service
         public bool ShowNoteFieldInListView = true;
 
         public int LogLevel = (int)SimpleLogHelper.EnumLogLevel.Warning;
+
+        public enum EnumRdpEngine
+        {
+            ActiveX = 0,
+            FreeRDP = 1
+        }
+
+        [DefaultValue(0)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int RdpEngine = (int)EnumRdpEngine.ActiveX;
         #endregion
 
         // Misc
