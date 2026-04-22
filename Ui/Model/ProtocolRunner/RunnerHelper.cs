@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -193,6 +193,11 @@ namespace _1RM.Model.ProtocolRunner
                 case RDP rdp:
                     {
                         var size = tab?.GetTabContentSize(ColorAndBrushHelper.ColorIsTransparent(protocol.ColorHex) == true);
+                        var useFreeRdp = ConfigurationService.GetGeneralConfig().RdpEngine == (int)ConfigurationService.GeneralConfig.EnumRdpEngine.FreeRDP;
+                        if (useFreeRdp)
+                        {
+                            return FreeRdpHost.Create(rdp, (int)(size?.Width ?? 0), (int)(size?.Height ?? 0));
+                        }
                         return AxMsRdpClient09Host.Create(rdp, (int)(size?.Width ?? 0), (int)(size?.Height ?? 0));
                     }
                 case VNC vnc:
