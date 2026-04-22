@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -242,6 +242,8 @@ namespace _1RM.View.Host.ProtocolHosts
         public abstract void Conn();
 
         public abstract void ReConn();
+
+        public virtual void Disconnect() { }
 
         /// <summary>
         /// disconnect the session and close host window

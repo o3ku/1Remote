@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType Condition="'$(Configuration)'=='Debug'">Exe</OutputType>
@@ -186,6 +186,7 @@
         <PackageReference Include="System.IO.Ports" Version="8.0.0" />
         <PackageReference Include="VariableKeywordMatcherIn1" Version="1.0.12" />
         <PackageReference Include="VirtualizingWrapPanel" Version="2.0.10" />
+        <PackageReference Include="RoyalApps.Community.FreeRdp.WinForms" Version="2.2.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -449,6 +450,9 @@
             <SubType>Designer</SubType>
         </Page>
         <Page Update="View\Host\ProtocolHosts\AxMsRdpClient09Host.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="View\Host\ProtocolHosts\FreeRdpHost.xaml">
             <SubType>Designer</SubType>
         </Page>
         <Page Update="View\Host\ProtocolHosts\FileTransmitHost.xaml">
