@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using _1RM.Service;
@@ -116,6 +116,26 @@ namespace _1RM.View.Settings.General
                     _configurationService.Save();
                 }
             }
+        }
+
+        public int RdpEngine
+        {
+            get => _configurationService.General.RdpEngine;
+            set
+            {
+                if (SetAndNotifyIfChanged(ref _configurationService.General.RdpEngine, value))
+                {
+                    _configurationService.Save();
+                }
+            }
+        }
+
+        public List<string> RdpEngineOptions { get; } = new List<string> { "ActiveX", "FreeRDP" };
+
+        public string RdpEngineSelectedItem
+        {
+            get => RdpEngineOptions[RdpEngine];
+            set => RdpEngine = RdpEngineOptions.IndexOf(value);
         }
 
         //public bool TabAutoFocusContent
