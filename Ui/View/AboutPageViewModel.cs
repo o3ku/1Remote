@@ -122,7 +122,7 @@ namespace _1RM.View
 
         public void CheckUpdateAsync()
         {
-            _checker.CheckUpdateAsync();
+            _checker?.CheckUpdateAsync();
         }
 
         private void OnNewVersionRelease(VersionHelper.CheckUpdateResult result)
