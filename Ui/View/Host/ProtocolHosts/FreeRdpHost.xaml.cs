@@ -103,40 +103,45 @@ namespace _1RM.View.Host.ProtocolHosts
         {
             if (_rdpControl == null) return;
 
-            try
+            Status = ProtocolHostStatus.Connecting;
+            GridLoading.Visibility = Visibility.Visible;
+            RdpHost.Visibility = Visibility.Collapsed;
+
+            var config = _rdpControl.Configuration;
+            config.Server = _rdpSettings.Address;
+            config.Username = _rdpSettings.UserName;
+            config.Domain = _rdpSettings.Domain;
+            config.Port = _rdpSettings.GetPort();
+            config.LoadBalanceInfo = _rdpSettings.LoadBalanceInfo;
+
+            var password = UnSafeStringEncipher.DecryptOrReturnOriginalString(_rdpSettings.Password);
+            if (!string.IsNullOrEmpty(password))
             {
-                Status = ProtocolHostStatus.Connecting;
-                GridLoading.Visibility = Visibility.Visible;
-                RdpHost.Visibility = Visibility.Collapsed;
+                config.Password = password;
+            }
 
-                var config = _rdpControl.Configuration;
-                config.Server = _rdpSettings.Address;
-                config.Username = _rdpSettings.UserName;
-                config.Domain = _rdpSettings.Domain;
-                config.Port = _rdpSettings.GetPort();
-                config.LoadBalanceInfo = _rdpSettings.LoadBalanceInfo;
+            config.DesktopWidth = 0;
+            config.DesktopHeight = 0;
+            config.AutoScaling = true;
 
-                var password = UnSafeStringEncipher.DecryptOrReturnOriginalString(_rdpSettings.Password);
-                if (!string.IsNullOrEmpty(password))
+            // Defer Connect() until WPF layout completes so the WinForms control
+            // has a valid window handle and non-zero ClientSize for wfreerdp.exe.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
                 {
-                    config.Password = password;
+                    _rdpControl.Connect();
                 }
-
-                config.DesktopWidth = 0;
-                config.DesktopHeight = 0;
-                config.AutoScaling = true;
-
-                _rdpControl.Connect();
-            }
-            catch (Exception ex)
-            {
-                SimpleLogHelper.Error($"FreeRDP Host: Connect failed - {ex.Message}");
-                Status = ProtocolHostStatus.Disconnected;
-                TbMessageTitle.Text = "Connection Error";
-                TbMessage.Text = ex.Message;
-                GridMessageBox.Visibility = Visibility.Visible;
-                GridLoading.Visibility = Visibility.Collapsed;
-            }
+                catch (Exception ex)
+                {
+                    SimpleLogHelper.Error($"FreeRDP Host: Connect failed - {ex.Message}");
+                    Status = ProtocolHostStatus.Disconnected;
+                    TbMessageTitle.Text = "Connection Error";
+                    TbMessage.Text = ex.Message;
+                    GridMessageBox.Visibility = Visibility.Visible;
+                    GridLoading.Visibility = Visibility.Collapsed;
+                }
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         public override void Close()
