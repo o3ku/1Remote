@@ -1,13 +1,13 @@
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
 using _1RM.Model.Protocol;
-using _1RM.Service;
 using _1RM.Utils;
 using RoyalApps.Community.FreeRdp.WinForms;
 using Shawn.Utils;
 using Shawn.Utils.Wpf;
+using Shawn.Utils.WpfResources.Theme.Styles;
+using Stylet;
 
 namespace _1RM.View.Host.ProtocolHosts
 {
@@ -64,27 +64,38 @@ namespace _1RM.View.Host.ProtocolHosts
                 Status = ProtocolHostStatus.Connected;
                 Execute.OnUIThread(() =>
                 {
+                    RdpHost.Visibility = Visibility.Visible;
                     GridLoading.Visibility = Visibility.Collapsed;
                     GridMessageBox.Visibility = Visibility.Collapsed;
                 });
             };
 
+            _rdpControl.CertificateError += (s, e) =>
+            {
+                SimpleLogHelper.Warning("FreeRDP Host: Certificate validation failed, continue with ignored certificate");
+                e.Continue();
+            };
+
+            _rdpControl.VerifyCredentials += (s, e) =>
+            {
+                var password = UnSafeStringEncipher.DecryptOrReturnOriginalString(_rdpSettings.Password);
+                SimpleLogHelper.Warning("FreeRDP Host: VerifyCredentials requested, retry with configured credentials");
+                e.SetCredentials(_rdpSettings.UserName, _rdpSettings.Domain, password);
+            };
+
             _rdpControl.Disconnected += (s, e) =>
             {
-                SimpleLogHelper.Debug($"FreeRDP Host: Disconnected (ErrorCode: {e.ErrorCode})");
+                var errorMessage = string.IsNullOrWhiteSpace(e.ErrorMessage) ? "Connection closed" : e.ErrorMessage;
+                SimpleLogHelper.Warning($"FreeRDP Host: Disconnected (ExitCode: {e.ExitCode}, UserInitiated: {e.UserInitiated}, Error: {errorMessage})");
                 Status = ProtocolHostStatus.Disconnected;
-
-                var errorCode = e.ErrorCode;
-                if (errorCode != 0)
+                Execute.OnUIThread(() =>
                 {
-                    Execute.OnUIThread(() =>
-                    {
-                        TbMessageTitle.Text = "Connection Failed";
-                        TbMessage.Text = $"Error code: {errorCode}";
-                        GridMessageBox.Visibility = Visibility.Visible;
-                        GridLoading.Visibility = Visibility.Collapsed;
-                    });
-                }
+                    RdpHost.Visibility = Visibility.Collapsed;
+                    GridLoading.Visibility = Visibility.Collapsed;
+                    GridMessageBox.Visibility = Visibility.Visible;
+                    TbMessageTitle.Text = e.UserInitiated ? "Disconnected" : "Connection Failed";
+                    TbMessage.Text = errorMessage;
+                });
             };
         }
 
@@ -103,10 +114,12 @@ namespace _1RM.View.Host.ProtocolHosts
                 config.Username = _rdpSettings.UserName;
                 config.Domain = _rdpSettings.Domain;
                 config.Port = _rdpSettings.GetPort();
+                config.LoadBalanceInfo = _rdpSettings.LoadBalanceInfo;
 
-                if (!string.IsNullOrEmpty(_rdpSettings.Password))
+                var password = UnSafeStringEncipher.DecryptOrReturnOriginalString(_rdpSettings.Password);
+                if (!string.IsNullOrEmpty(password))
                 {
-                    config.Password = _rdpSettings.Password;
+                    config.Password = password;
                 }
 
                 config.DesktopWidth = 0;
@@ -132,7 +145,7 @@ namespace _1RM.View.Host.ProtocolHosts
             base.Close();
         }
 
-        public void Disconnect()
+        public new void Disconnect()
         {
             try
             {
@@ -181,8 +194,6 @@ namespace _1RM.View.Host.ProtocolHosts
             {
                 return;
             }
-            if (_rdpControl?.FullScreen != true)
-                _rdpControl!.FullScreen = true;
         }
 
         public override void FocusOnMe()
