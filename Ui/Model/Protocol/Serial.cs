@@ -2,7 +2,6 @@
 using System.Linq;
 using Newtonsoft.Json;
 using _1RM.Model.Protocol.Base;
-using _1RM.Utils.PuTTY;
 using Shawn.Utils;
 using System.Collections.Generic;
 using _1RM.Service;

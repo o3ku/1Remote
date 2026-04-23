@@ -190,7 +190,7 @@ namespace _1RM.Service
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // ignored
                 }
