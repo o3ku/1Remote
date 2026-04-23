@@ -15,6 +15,7 @@ using _1RM.View.Host;
 using _1RM.View.Host.ProtocolHosts;
 using Shawn.Utils;
 using Shawn.Utils.Wpf;
+using Stylet;
 
 namespace _1RM.Model.ProtocolRunner
 {
@@ -193,7 +194,8 @@ namespace _1RM.Model.ProtocolRunner
                 case RDP rdp:
                     {
                         var size = tab?.GetTabContentSize(ColorAndBrushHelper.ColorIsTransparent(protocol.ColorHex) == true);
-                        var useFreeRdp = ConfigurationService.GetGeneralConfig().RdpEngine == (int)ConfigurationService.GeneralConfig.EnumRdpEngine.FreeRDP;
+                        var configService = IoC.Get<ConfigurationService>();
+                        var useFreeRdp = configService.General.RdpEngine == (int)GeneralConfig.EnumRdpEngine.FreeRDP;
                         if (useFreeRdp)
                         {
                             return FreeRdpHost.Create(rdp, (int)(size?.Width ?? 0), (int)(size?.Height ?? 0));
