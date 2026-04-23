@@ -299,7 +299,7 @@
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="BorderThickness" Value="1" />
-                                        <Setter Property="CornerRadius" Value="5" />
+                                        <Setter Property="CornerRadius" Value="0" />
                                         <Setter Property="BorderBrush" Value="{DynamicResource DefaultBorderBrush}"/>
                                         <Setter Property="Padding" Value="5 1" />
                                         <Setter Property="Opacity" Value="1" />
@@ -537,7 +537,7 @@
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="BorderThickness" Value="1" />
-                                            <Setter Property="CornerRadius" Value="5" />
+                                            <Setter Property="CornerRadius" Value="0" />
                                             <Setter Property="BorderBrush" Value="{DynamicResource DefaultBorderBrush}"/>
                                             <Setter Property="Padding" Value="5 1" />
                                             <Setter Property="Opacity" Value="1" />

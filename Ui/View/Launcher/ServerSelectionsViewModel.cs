@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using _1RM.Controls.NoteDisplay;
 using _1RM.Model;
 using _1RM.Model.Protocol.Base;
@@ -14,7 +13,6 @@ using _1RM.Service;
 using _1RM.Utils;
 using Shawn.Utils;
 using Shawn.Utils.Wpf;
-using Shawn.Utils.Wpf.PageHost;
 using Stylet;
 #if DEBUG
 using System.Diagnostics;
@@ -220,7 +218,7 @@ namespace _1RM.View.Launcher
             // show server list
             if (view.GridActionsList.Visibility != Visibility.Visible)
             {
-                var tmp = LauncherWindowViewModel.LAUNCHER_SERVER_LIST_ITEM_HEIGHT * Math.Min(VmServerList.Count, LauncherWindowViewModel.LAUNCHER_OUTLINE_CORNER_RADIUS);
+                var tmp = LauncherWindowViewModel.LAUNCHER_SERVER_LIST_ITEM_HEIGHT * Math.Min(VmServerList.Count, LauncherWindowViewModel.MAX_SERVER_COUNT);
                 ret = LauncherWindowViewModel.LAUNCHER_GRID_KEYWORD_HEIGHT + tmp;
             }
             return ret;
@@ -419,23 +417,9 @@ namespace _1RM.View.Launcher
 
             Execute.OnUIThreadSync(() =>
             {
-                if (GridNoteVisibility == Visibility.Visible)
-                {
-                    RaisePropertyChanged(nameof(GridNoteVisibility));
-                    var sb = new Storyboard();
-                    sb.AddFadeIn(0.3);
-                    sb.Begin(IoC.Get<LauncherWindowView>().NoteField);
-                }
-                else
-                {
-                    var sb = new Storyboard();
-                    sb.AddFadeOut(0.3);
-                    sb.Completed += (_, _) =>
-                    {
-                        RaisePropertyChanged(nameof(GridNoteVisibility));
-                    };
-                    sb.Begin(IoC.Get<LauncherWindowView>().NoteField);
-                }
+                var noteField = IoC.Get<LauncherWindowView>().NoteField;
+                noteField.Opacity = GridNoteVisibility == Visibility.Visible ? 1 : 0;
+                RaisePropertyChanged(nameof(GridNoteVisibility));
             });
 
             IoC.Get<LauncherWindowViewModel>().ReSetWindowHeight();

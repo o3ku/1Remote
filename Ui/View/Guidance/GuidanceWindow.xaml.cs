@@ -1,7 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Animation;
-using Shawn.Utils.Wpf.PageHost;
 using Shawn.Utils.WpfResources.Theme.Styles;
 
 namespace _1RM.View.Guidance
@@ -44,27 +42,16 @@ namespace _1RM.View.Guidance
         {
             if (Step != 0) return;
             Step = 1;
+            Grid1.Visibility = Visibility.Collapsed;
             Grid2.Visibility = Visibility.Visible;
-
-            var sb = new Storyboard();
-            sb.AddSlideToLeft(0.5, ActualWidth);
-            sb.Begin(Grid1);
-            var sb2 = new Storyboard();
-            sb2.AddSlideFromRight(0.5, ActualWidth);
-            sb2.Begin(Grid2);
         }
 
         private void ButtonPrevious_OnClick(object sender, RoutedEventArgs e)
         {
             if (Step != 1) return;
             Step = 0;
-            Grid2.Visibility = Visibility.Visible;
-            var sb = new Storyboard();
-            sb.AddSlideFromLeft(0.5, ActualWidth);
-            sb.Begin(Grid1);
-            var sb2 = new Storyboard();
-            sb2.AddSlideToRight(0.5, ActualWidth);
-            sb2.Begin(Grid2);
+            Grid1.Visibility = Visibility.Visible;
+            Grid2.Visibility = Visibility.Collapsed;
         }
 
         private void ButtonExit_OnClick(object sender, RoutedEventArgs e)

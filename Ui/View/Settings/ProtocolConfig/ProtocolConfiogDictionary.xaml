@@ -5,10 +5,10 @@
     <Style x:Key="GridOneRow" TargetType="Grid">
         <Setter Property="Height" Value="Auto"></Setter>
         <Setter Property="MinWidth" Value="300"></Setter>
-        <Setter Property="MinHeight" Value="30"></Setter>
+        <Setter Property="MinHeight" Value="28"></Setter>
         <Setter Property="Margin">
             <Setter.Value>
-                <Thickness Bottom="15"></Thickness>
+                <Thickness Bottom="10"></Thickness>
             </Setter.Value>
         </Setter>
     </Style>

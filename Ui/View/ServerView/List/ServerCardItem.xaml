@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="_1RM.Controls.ServerCardItem"
+<UserControl x:Class="_1RM.Controls.ServerCardItem"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -64,7 +64,7 @@
                     <ControlTemplate TargetType="CheckBox">
                         <Border Background="{TemplateBinding Control.Background}" 
                                 BorderThickness="0" 
-                                CornerRadius="2,0,4,0" Name="PART_Background">
+                                CornerRadius="0" Name="PART_Background">
                             <Grid>
                                 <Path Name="PATH_UNCHECK" Fill="{DynamicResource AccentTextBrush}" Stretch="Fill" Margin="2 2 3 3" Data="F1 M 20 0 L 20 20 L 0 20 L 0 0 Z " VerticalAlignment="Center" HorizontalAlignment="Center" />
                                 <Path Name="PATH_CHECK" Fill="{DynamicResource AccentTextBrush}" Stretch="Fill" Margin="2 2 3 3" Data="F1 M 17.939453 5.439453 L 7.5 15.888672 L 2.060547 10.439453 L 2.939453 9.560547 L 7.5 14.111328 L 17.060547 4.560547 Z " VerticalAlignment="Center" HorizontalAlignment="Center" />
@@ -235,7 +235,7 @@
         </Grid>
 
         <!-- Card Border: Hover Button Layer -->
-        <Border Name="CardRealBorder" CornerRadius="4" BorderThickness="2" Style="{StaticResource ButtonLayerStyle}">
+        <Border Name="CardRealBorder" CornerRadius="0" BorderThickness="2" Style="{StaticResource ButtonLayerStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"></RowDefinition>

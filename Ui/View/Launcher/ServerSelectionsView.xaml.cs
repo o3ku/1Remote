@@ -3,11 +3,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Animation;
 using _1RM.Model;
 using _1RM.Service;
 using Shawn.Utils.Wpf;
-using Shawn.Utils.Wpf.PageHost;
 
 namespace _1RM.View.Launcher
 {
@@ -203,25 +201,17 @@ namespace _1RM.View.Launcher
             vm.SelectedActionIndex = 0;
 
             GridActionsList.Visibility = Visibility.Visible;
+            GridActionsList.Margin = new Thickness(0);
             IoC.Get<LauncherWindowViewModel>().ReSetWindowHeight();
-
-            var sb = new Storyboard();
-            sb.AddSlideFromLeft(0.3, LauncherWindowViewModel.LAUNCHER_LIST_AREA_WIDTH);
-            sb.Begin(GridActionsList);
         }
 
 
         public void HideActionsList()
         {
             if (IoC.Get<LauncherWindowViewModel>().View is LauncherWindowView { IsClosing: true }) return;
-            var sb = new Storyboard();
-            sb.AddSlideToLeft(0.3, LauncherWindowViewModel.LAUNCHER_LIST_AREA_WIDTH);
-            sb.Completed += (o, args) =>
-            {
-                GridActionsList.Visibility = Visibility.Hidden;
-                IoC.Get<LauncherWindowViewModel>().ReSetWindowHeight();
-            };
-            sb.Begin(GridActionsList);
+            GridActionsList.Margin = new Thickness(0);
+            GridActionsList.Visibility = Visibility.Hidden;
+            IoC.Get<LauncherWindowViewModel>().ReSetWindowHeight();
         }
 
 

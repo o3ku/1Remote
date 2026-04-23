@@ -27,7 +27,7 @@
             </Style.Resources>
             <Setter Property="MinWidth" Value="17" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="CornerRadius" Value="2" />
+            <Setter Property="CornerRadius" Value="0" />
             <Setter Property="Background">
                 <Setter.Value>
                     <SolidColorBrush Color="{DynamicResource PrimaryDarkColor}" Opacity="0.5"></SolidColorBrush>

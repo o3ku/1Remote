@@ -20,7 +20,7 @@ namespace _1RM.View
         public const double LAUNCHER_GRID_KEYWORD_HEIGHT = 46;
         public const double LAUNCHER_SERVER_LIST_ITEM_HEIGHT = 40;
         public const double LAUNCHER_ACTION_LIST_ITEM_HEIGHT = 34;
-        public const double LAUNCHER_OUTLINE_CORNER_RADIUS = 8;
+        public const double LAUNCHER_OUTLINE_CORNER_RADIUS = 0;
         public static readonly CornerRadius LauncherOutlineCornerRadiusObj = new CornerRadius(LAUNCHER_OUTLINE_CORNER_RADIUS, LAUNCHER_OUTLINE_CORNER_RADIUS, LAUNCHER_OUTLINE_CORNER_RADIUS, LAUNCHER_OUTLINE_CORNER_RADIUS);
 
 

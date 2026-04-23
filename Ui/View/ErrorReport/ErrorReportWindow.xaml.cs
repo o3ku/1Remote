@@ -7,12 +7,10 @@ using System.Text;
 using Microsoft.Win32;
 using Shawn.Utils;
 using System.Windows;
-using System.Windows.Media.Animation;
 using _1RM.Utils;
 using Microsoft.AppCenter.Crashes;
 using Shawn.Utils.Wpf.Controls;
 using Shawn.Utils.Wpf.FileSystem;
-using Shawn.Utils.Wpf.PageHost;
 using Shawn.Utils.WpfResources.Theme.Styles;
 using System.Collections.Generic;
 using _1RM.Utils.Tracing;
@@ -137,9 +135,7 @@ namespace _1RM.View.ErrorReport
             try
             {
                 Clipboard.SetDataObject(TbErrorInfo.Text);
-                var sb = new Storyboard();
-                sb.AddFadeOut(1);
-                sb.Begin(IconCopyDone);
+                IconCopyDone.Opacity = 1;
             }
             catch
             {
@@ -156,9 +152,7 @@ namespace _1RM.View.ErrorReport
                     selectedFileName: Assert.APP_NAME + "_ErrorReport_" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".md");
                 if (path == null) return;
                 File.WriteAllText(path, TbErrorInfo.Text.Replace("\n", "\n\n"), Encoding.UTF8);
-                var sb = new Storyboard();
-                sb.AddFadeOut(1);
-                sb.Begin(IconSaveDone);
+                IconSaveDone.Opacity = 1;
             }
             catch
             {

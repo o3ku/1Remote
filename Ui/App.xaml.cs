@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Media;
 using System.Threading;
@@ -64,6 +64,7 @@ namespace _1RM
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Note: Animation disabling moved to startup options in Settings
             ResourceDictionary = this.Resources;
             base.OnStartup(e);
 

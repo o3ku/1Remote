@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="_1RM.Controls.ServerLineItem"
+<UserControl x:Class="_1RM.Controls.ServerLineItem"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -64,7 +64,7 @@
         <DataTemplate x:Key="LineItemDataTemplateTag" DataType="model:Tag">
             <Border Margin="3" Padding="5"
                     Background="{DynamicResource AccentMidBrush}" 
-                    CornerRadius="5" 
+                    CornerRadius="0" 
                     VerticalAlignment="Center"
                     Tag="{Binding DataContext.TagsPanelViewModel, RelativeSource={RelativeSource AncestorType=serverList:ServerListPageView}}"
                     PreviewMouseDown="UIElement_OnPreviewMouseDown"

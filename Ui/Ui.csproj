@@ -38,7 +38,7 @@
 
 
     <PropertyGroup Condition="!$(Configuration.Contains('Net6')) and !$(Configuration.Contains('Net48'))">
-        <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(Configuration.Contains('Net6'))">
