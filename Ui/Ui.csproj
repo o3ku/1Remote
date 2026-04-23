@@ -514,4 +514,16 @@
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)'!='Debug'">
     </Target>
+
+    <PropertyGroup>
+        <LocalStringSaltSourcePath Condition="'$(LocalStringSaltSourcePath)' == ''">C:\1Remote_Secret\Salt.txt</LocalStringSaltSourcePath>
+        <LocalStringSaltPublishFileName Condition="'$(LocalStringSaltPublishFileName)' == ''">$(AssemblyName).salt.txt</LocalStringSaltPublishFileName>
+    </PropertyGroup>
+
+    <Target Name="CopyLocalStringSaltAfterPublish" AfterTargets="Publish"
+            Condition="'$(PublishDir)' != '' and Exists('$(LocalStringSaltSourcePath)')">
+        <Copy SourceFiles="$(LocalStringSaltSourcePath)"
+              DestinationFiles="$(PublishDir)$(LocalStringSaltPublishFileName)"
+              SkipUnchangedFiles="true" />
+    </Target>
 </Project>
