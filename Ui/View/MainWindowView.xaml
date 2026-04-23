@@ -135,7 +135,7 @@
                             <Path.Style>
                                 <Style TargetType="Path">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding AboutViewModel.NewVersion}" Value="">
+                                        <DataTrigger Binding="{Binding UpdateService.NewVersion}" Value="">
                                             <Setter Property="Visibility" Value="Collapsed"></Setter>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -426,7 +426,7 @@
                                             <Path.Style>
                                                 <Style TargetType="Path">
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AboutViewModel.NewVersion}" Value="">
+                                                        <DataTrigger Binding="{Binding UpdateService.NewVersion}" Value="">
                                                             <Setter Property="Visibility" Value="Collapsed"></Setter>
                                                         </DataTrigger>
                                                     </Style.Triggers>

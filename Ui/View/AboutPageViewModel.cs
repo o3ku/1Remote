@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Timers;
+using System.ComponentModel;
 using _1RM.Service;
 using _1RM.View.Utils;
 using _1RM.View.Utils.MaskAndPop;
-using Shawn.Utils;
 using Shawn.Utils.Wpf;
 using Shawn.Utils.Wpf.Controls;
 using Stylet;
@@ -15,132 +10,44 @@ namespace _1RM.View
 {
     public class AboutPageViewModel : PopupBase
     {
-        private Timer? _checkUpdateTimer;
-        private VersionHelper? _checker;
+        private AppUpdateService UpdateService => IoC.Get<AppUpdateService>();
 
         public AboutPageViewModel()
         {
-            StartVersionCheckTimer();
+            UpdateService.PropertyChanged += OnUpdateServicePropertyChanged;
         }
 
         public void StartVersionCheckTimer()
         {
-            if (IoC.Get<ConfigurationService>().General.DoNotCheckNewVersion)
-                return;
-
-            if (_checker == null)
-            {
-                _checker = new VersionHelper(AppVersion.VersionData,
-                    AppVersion.UpdateCheckUrls,
-                    AppVersion.UpdatePublishUrls,
-                    customCheckMethod: CustomCheckMethod);
-                _checker.OnNewVersionRelease += OnNewVersionRelease;
-            }
-            if (_checkUpdateTimer == null)
-            {
-                _checkUpdateTimer = new Timer()
-                {
-                    Interval = 1000 * 60 * 60,
-                    AutoReset = true,
-                };
-                _checkUpdateTimer.Elapsed += (sender, args) =>
-                {
-                    if (IoC.Get<ConfigurationService>().General.DoNotCheckNewVersion)
-                    {
-                        _checkUpdateTimer.Stop(); // Stop timer if checking is disabled
-                        return;
-                    }
-                    _checker.CheckUpdateAsync();
-                };
-            }
-            _checker.CheckUpdateAsync();
-            _checkUpdateTimer.Stop();
-            _checkUpdateTimer.Start();
+            UpdateService.StartVersionCheckTimer();
         }
 
-        private static VersionHelper.CheckUpdateResult CustomCheckMethod(string html, string publishUrl, VersionHelper.Version currentVersion, VersionHelper.Version? ignoreVersion)
-        {
-            var ret = VersionHelper.DefaultCheckMethod(html, publishUrl, currentVersion, ignoreVersion);
-            if (ret.NewerPublished)
-                return ret;
-
-            var patterns = new List<string>()
-            {
-                @".?1remote-([\d|\.]*.*)-net",
-                @".?latest\sversion:\s*([\d|.]*)",
-            };
-            foreach (var pattern in patterns)
-            {
-                var mc = Regex.Matches(html, pattern, RegexOptions.IgnoreCase);
-                if (mc.Count <= 0) continue;
-                var versionString = mc[0].Groups[1].Value;
-                var releasedVersion = VersionHelper.Version.FromString(versionString);
-                if (ignoreVersion is not null)
-                {
-                    if (releasedVersion <= ignoreVersion)
-                    {
-                        return VersionHelper.CheckUpdateResult.False();
-                    }
-                }
-                if (releasedVersion > currentVersion)
-                    return new VersionHelper.CheckUpdateResult(true, versionString, publishUrl, versionString.FirstOrDefault() == '!' || versionString.LastOrDefault() == '!');
-            }
-            return VersionHelper.CheckUpdateResult.False();
-        }
-
-        ~AboutPageViewModel()
-        {
-            _checkUpdateTimer?.Stop();
-            _checkUpdateTimer?.Dispose();
-        }
-
-        public string CurrentVersion => AppVersion.Version;
-        public string CurrentVersionDate => AppVersion.BuildDate.IndexOf("+", StringComparison.Ordinal) > 0 ? AppVersion.BuildDate.Substring(0, AppVersion.BuildDate.LastIndexOf("+", StringComparison.Ordinal)) : AppVersion.BuildDate;
-
-
-        private string _newVersion = "";
-        public string NewVersion
-        {
-            get => _newVersion;
-            set => SetAndNotifyIfChanged(ref _newVersion, value);
-        }
-
-        private string _newVersionUrl = "";
-
-        public string NewVersionUrl
-        {
-            get => _newVersionUrl;
-            set => SetAndNotifyIfChanged(ref _newVersionUrl, value);
-        }
-
-        private bool _isBreakingNewVersion;
-        public bool IsBreakingNewVersion
-        {
-            get => _isBreakingNewVersion;
-            set => SetAndNotifyIfChanged(ref _isBreakingNewVersion, value);
-        }
+        public string CurrentVersion => UpdateService.CurrentVersion;
+        public string CurrentVersionDate => UpdateService.CurrentVersionDate;
+        public string NewVersion => UpdateService.NewVersion;
+        public string NewVersionUrl => UpdateService.NewVersionUrl;
+        public bool IsBreakingNewVersion => UpdateService.IsBreakingNewVersion;
 
         public void CheckUpdateAsync()
         {
-            _checker?.CheckUpdateAsync();
+            UpdateService.CheckUpdateAsync();
         }
 
-        private void OnNewVersionRelease(VersionHelper.CheckUpdateResult result)
+        private void OnUpdateServicePropertyChanged(object? sender, PropertyChangedEventArgs args)
         {
-            this.NewVersion = result.NewerVersion;
-            this.NewVersionUrl = result.NewerUrl;
-            this.IsBreakingNewVersion = result.NewerHasBreakChange;
-            var v = IoC.Get<ConfigurationService>().Engagement.BreakingChangeAlertVersion;
-            if (this.IsBreakingNewVersion
-                && VersionHelper.Version.FromString(result.NewerVersion) > v)
+            switch (args.PropertyName)
             {
-                Execute.OnUIThreadSync(() =>
-                {
-                    IoC.Get<IWindowManager>().ShowDialog(IoC.Get<BreakingChangeUpdateViewModel>());
-                });
+                case nameof(AppUpdateService.NewVersion):
+                    RaisePropertyChanged(nameof(NewVersion));
+                    break;
+                case nameof(AppUpdateService.NewVersionUrl):
+                    RaisePropertyChanged(nameof(NewVersionUrl));
+                    break;
+                case nameof(AppUpdateService.IsBreakingNewVersion):
+                    RaisePropertyChanged(nameof(IsBreakingNewVersion));
+                    break;
             }
         }
-
 
         private RelayCommand? _cmdClose;
         public RelayCommand CmdClose
@@ -149,7 +56,7 @@ namespace _1RM.View
             {
                 return _cmdClose ??= new RelayCommand((o) =>
                 {
-                    this.RequestClose();
+                    RequestClose();
                 });
             }
         }

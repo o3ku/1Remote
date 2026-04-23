@@ -31,9 +31,9 @@
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap" Text="Breaking Change Alert!"></TextBlock>
                     <TextBlock FontSize="16" FontWeight="Black" HorizontalAlignment="Center">
-                        <Hyperlink Name="HyperlinkUpdate" Command="{Binding AboutPageViewModel.CmdUpdate}" TextDecorations="{x:Null}">
+                        <Hyperlink Name="HyperlinkUpdate" Command="{Binding CmdUpdate}" TextDecorations="{x:Null}">
                             <Grid>
-                                <TextBlock Name="TbNewVersion" Margin="0" Text="{Binding AboutPageViewModel.NewVersion}" Foreground="{Binding ElementName=HyperlinkUpdate, Path=Foreground}" />
+                                <TextBlock Name="TbNewVersion" Margin="0" Text="{Binding UpdateService.NewVersion}" Foreground="{Binding ElementName=HyperlinkUpdate, Path=Foreground}" />
                             </Grid>
                         </Hyperlink>
                     </TextBlock>

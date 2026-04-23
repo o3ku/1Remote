@@ -20,7 +20,7 @@ namespace _1RM.View.Utils
     /// </summary>
     public class BreakingChangeUpdateViewModel : NotifyPropertyChangedBaseScreen
     {
-        public AboutPageViewModel AboutPageViewModel => IoC.Get<AboutPageViewModel>();
+        public AppUpdateService UpdateService => IoC.Get<AppUpdateService>();
 
 
         private RelayCommand? _cmdUpdate;
@@ -33,7 +33,7 @@ namespace _1RM.View.Utils
 #if FOR_MICROSOFT_STORE_ONLY
                         HyperlinkHelper.OpenUriBySystem("ms-windows-store://review/?productid=9PNMNF92JNFP");
 #else
-                    HyperlinkHelper.OpenUriBySystem(AboutPageViewModel.NewVersionUrl);
+                    HyperlinkHelper.OpenUriBySystem(UpdateService.NewVersionUrl);
 #endif
                 });
             }
@@ -45,7 +45,7 @@ namespace _1RM.View.Utils
             {
                 return _cmdClose ??= new RelayCommand((o) =>
                 {
-                    IoC.Get<ConfigurationService>().Engagement.BreakingChangeAlertVersionString = AboutPageViewModel.NewVersion;
+                    IoC.Get<ConfigurationService>().Engagement.BreakingChangeAlertVersionString = UpdateService.NewVersion;
                     IoC.Get<ConfigurationService>().Save();
                     this.RequestClose(true);
                 });

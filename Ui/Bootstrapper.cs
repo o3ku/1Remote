@@ -57,6 +57,7 @@ namespace _1RM
             builder.Bind<ProtocolConfigurationService>().ToSelf().InSingletonScope();
             builder.Bind<DataSourceService>().ToSelf().InSingletonScope();
             builder.Bind<LauncherService>().ToSelf().InSingletonScope();
+            builder.Bind<AppUpdateService>().ToSelf().InSingletonScope();
 
             builder.Bind<MainWindowView>().ToSelf().InSingletonScope();
             builder.Bind<MainWindowViewModel>().ToSelf().InSingletonScope();
