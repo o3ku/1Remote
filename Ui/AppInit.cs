@@ -30,6 +30,35 @@ namespace _1RM
 
     internal static class AppInitHelper
     {
+        private const string LocalStringSaltEnvVar = "ONE_REMOTE_STRING_SALT";
+
+        private static string ResolveStringSalt()
+        {
+            if (!string.IsNullOrWhiteSpace(Assert.STRING_SALT)
+                && !Assert.STRING_SALT.StartsWith("===REPLACE_ME_WITH_", StringComparison.Ordinal))
+            {
+                return Assert.STRING_SALT;
+            }
+
+            var envSalt = Environment.GetEnvironmentVariable(LocalStringSaltEnvVar)?.Trim();
+            if (!string.IsNullOrWhiteSpace(envSalt))
+            {
+                return envSalt;
+            }
+
+            var localSaltFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{Assert.APP_NAME}.salt.txt");
+            if (File.Exists(localSaltFilePath))
+            {
+                var fileSalt = File.ReadAllText(localSaltFilePath).Trim();
+                if (!string.IsNullOrWhiteSpace(fileSalt))
+                {
+                    return fileSalt;
+                }
+            }
+
+            return Assert.STRING_SALT;
+        }
+
         private static bool WritePermissionCheck(string path, bool isFile, bool alert, bool exitIfError)
         {
             Debug.Assert(LanguageServiceObj != null);
@@ -105,7 +134,7 @@ namespace _1RM
         {
             SimpleLogHelper.WriteLogLevel = SimpleLogHelper.EnumLogLevel.Disabled;
             // Set salt by github action with repository secret
-            UnSafeStringEncipher.Init(Assert.STRING_SALT);
+            UnSafeStringEncipher.Init(ResolveStringSalt());
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory); // in case user start app in a different working dictionary.
             UnifyTracing.Init();
         }
