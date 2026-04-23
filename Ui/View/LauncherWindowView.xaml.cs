@@ -28,7 +28,6 @@ namespace _1RM.View
                 var myWindowHandle = new WindowInteropHelper(this).Handle;
                 var source = HwndSource.FromHwnd(myWindowHandle);
                 source?.AddHook(HookUSBDeviceRedirect); 
-                ServerIcons.Init();
             };
         }
 

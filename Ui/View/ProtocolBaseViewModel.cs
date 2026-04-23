@@ -13,6 +13,7 @@ using _1RM.View.Launcher;
 using Shawn.Utils;
 using Shawn.Utils.Wpf;
 using Stylet;
+using System.ComponentModel;
 
 namespace _1RM.View
 {
@@ -93,7 +94,47 @@ namespace _1RM.View
             RaisePropertyChanged(nameof(Tags));
         }
 
-        private ProtocolBase _server;
+        private static bool HasVisibleNote(ProtocolBase server)
+        {
+            return ConverterNoteToVisibility.IsVisible(server.Note);
+        }
+
+        private void AttachServer(ProtocolBase server)
+        {
+            server.PropertyChanged -= ServerOnPropertyChanged;
+            server.PropertyChanged += ServerOnPropertyChanged;
+        }
+
+        private void DetachServer(ProtocolBase server)
+        {
+            server.PropertyChanged -= ServerOnPropertyChanged;
+        }
+
+        private void ServerOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ProtocolBase.Note))
+            {
+                if (!HasVisibleNote(_server) && _hoverNoteDisplayControl != null)
+                {
+                    _hoverNoteDisplayControl = null;
+                }
+                RaisePropertyChanged(nameof(HoverNoteDisplayControl));
+            }
+        }
+
+        private void ApplyServerState()
+        {
+            _server.Tags = _server.Tags.Select(x => x.ToLower()).ToList();
+            _hoverNoteDisplayControl = null;
+            LastConnectTime = LocalityConnectRecorder.ConnectTimeGet(_server);
+            TagString = string.Join(" ", _server.Tags.Select(x => "#" + x));
+            ReLoadTags();
+            IsViewable = IsEditable = _server.DataSource?.IsWritable == true;
+            LauncherMainTitleViewModel = null;
+            LauncherSubTitleViewModel = null;
+        }
+
+        private ProtocolBase _server = null!;
         public ProtocolBase Server
         {
             get => _server;
@@ -101,30 +142,22 @@ namespace _1RM.View
             {
                 if (_server != value)
                 {
-                    _server = value;
-                    _server.Tags = _server.Tags.Select(x => x.ToLower()).ToList();
-
-                    if (ConverterNoteToVisibility.IsVisible(_server.Note))
+                    if (_server != null)
                     {
-                        Execute.OnUIThreadSync(() =>
-                        {
-                            HoverNoteDisplayControl = new NoteIcon(_server);
-                        });
+                        DetachServer(_server);
                     }
-                    LastConnectTime = LocalityConnectRecorder.ConnectTimeGet(_server);
-                    TagString = string.Join(" ", _server.Tags.Select(x => "#" + x));
+                    _server = value;
+                    AttachServer(_server);
+                    ApplyServerState();
                     RaisePropertyChanged(nameof(TagString));
-                    ReLoadTags();
                     RaisePropertyChanged(nameof(Id));
                     RaisePropertyChanged(nameof(DisplayName));
                     RaisePropertyChanged(nameof(SubTitle));
                     RaisePropertyChanged(nameof(ProtocolDisplayNameInShort));
-                    IsViewable = IsEditable = _server.DataSource?.IsWritable == true;
                     RaisePropertyChanged(nameof(DataSource));
                     RaisePropertyChanged(nameof(IsViewable));
                     RaisePropertyChanged(nameof(IsEditable));
-                    LauncherMainTitleViewModel = null;
-                    LauncherSubTitleViewModel = null;
+                    RaisePropertyChanged(nameof(HoverNoteDisplayControl));
                 }
                 RaisePropertyChanged();
             }
@@ -132,19 +165,12 @@ namespace _1RM.View
 
         public ProtocolBaseViewModel(ProtocolBase psb)
         {
-            Server = psb;
             _server = psb;
+            AttachServer(psb);
+            ApplyServerState();
             
             // 初始化 CustomOrder
             CustomOrder = LocalityListViewService.Settings.ServerCustomOrder.GetValueOrDefault(psb.Id, 0);
-
-            if (ConverterNoteToVisibility.IsVisible(Server.Note))
-            {
-                Execute.OnUIThreadSync(() =>
-                {
-                    HoverNoteDisplayControl = new NoteIcon(this.Server);
-                });
-            }
         }
 
         private ServerTitleViewModel? _launcherMainTitleViewModel;
@@ -165,8 +191,23 @@ namespace _1RM.View
         private NoteIcon? _hoverNoteDisplayControl = null;
         public NoteIcon? HoverNoteDisplayControl
         {
-            get => _hoverNoteDisplayControl;
-            set => SetAndNotifyIfChanged(ref _hoverNoteDisplayControl, value);
+            get
+            {
+                if (!HasVisibleNote(_server))
+                {
+                    return null;
+                }
+
+                if (_hoverNoteDisplayControl == null)
+                {
+                    Execute.OnUIThreadSync(() =>
+                    {
+                        _hoverNoteDisplayControl ??= new NoteIcon(_server);
+                    });
+                }
+
+                return _hoverNoteDisplayControl;
+            }
         }
 
         private bool _isSelected = false;

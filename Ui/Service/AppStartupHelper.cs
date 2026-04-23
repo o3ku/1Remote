@@ -12,7 +12,6 @@ using _1RM.Utils;
 using _1RM.Utils.Tracing;
 using _1RM.Utils.WindowsApi.WindowsShortcutFactory;
 using _1RM.View;
-using _1RM.View.Settings.General;
 using Shawn.Utils;
 using Shawn.Utils.Wpf;
 using Shawn.Utils.Wpf.Image;
@@ -83,10 +82,8 @@ namespace _1RM.Service
         }
 
 
-        private static GeneralSettingViewModel? _generalSettingViewModel = null;
-        public static void ProcessWhenDataLoaded(GeneralSettingViewModel generalViewModel)
+        public static void ProcessWhenDataLoaded()
         {
-            _generalSettingViewModel = generalViewModel;
             ProcessArg(_args);
             _args.Clear();
             if (NamedPipeHelper.IsServer)
@@ -113,23 +110,13 @@ namespace _1RM.Service
             }
             if (args.Contains(INSTALL) || args.Contains(RUN_AUTO_AT_OS_START_INSTALL))
             {
-                if (_generalSettingViewModel != null) // update ui
-                    _generalSettingViewModel.AppStartAutomatically = true;
-                else
-                {
-                    ConfigurationService.SetSelfStart(true);
-                    Thread.Sleep(500);
-                }
+                ConfigurationService.SetSelfStart(true);
+                Thread.Sleep(500);
             }
             else if (args.Contains(UNINSTALL) || args.Contains(RUN_AUTO_AT_OS_START_UNINSTALL))
             {
-                if (_generalSettingViewModel != null) // update ui
-                    _generalSettingViewModel.AppStartAutomatically = false;
-                else
-                {
-                    ConfigurationService.SetSelfStart(false);
-                    Thread.Sleep(500);
-                }
+                ConfigurationService.SetSelfStart(false);
+                Thread.Sleep(500);
             }
 
             foreach (var arg in args.ToArray())

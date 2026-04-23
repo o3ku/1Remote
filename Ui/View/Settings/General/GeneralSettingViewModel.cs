@@ -7,6 +7,7 @@ using _1RM.Utils.Tracing;
 using Shawn.Utils;
 using Shawn.Utils.Wpf;
 using Shawn.Utils.Wpf.FileSystem;
+using SetSelfStartingHelper = _1RM.Utils.SetSelfStartingHelper;
 
 namespace _1RM.View.Settings.General
 {
@@ -46,19 +47,22 @@ namespace _1RM.View.Settings.General
                 if (SetAndNotifyIfChanged(ref _configurationService.General.DoNotCheckNewVersion, value))
                 {
                     _configurationService.Save();
-                    IoC.Get<AboutPageViewModel>().StartVersionCheckTimer();
+                    IoC.Get<AppUpdateService>().StartVersionCheckTimer();
                 }
             }
         }
 
-        private bool _appStartAutomatically = false;
         public bool AppStartAutomatically
         {
-            get => _appStartAutomatically;
+            get => SetSelfStartingHelper.IsSelfStart(Assert.APP_NAME);
             set
             {
+                if (value == AppStartAutomatically)
+                {
+                    return;
+                }
+
                 ConfigurationService.SetSelfStart(value);
-                _appStartAutomatically = value;
                 RaisePropertyChanged();
             }
         }

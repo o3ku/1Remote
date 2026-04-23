@@ -146,6 +146,38 @@ namespace _1RM.View.Launcher
             }
         }
 
+        private void ReplaceVmServerList(IEnumerable<ProtocolBaseViewModel> items, string? selectedId = null)
+        {
+            foreach (var viewModel in VmServerList)
+            {
+                viewModel.PropertyChanged -= OnLastConnectTimeChanged;
+            }
+
+            VmServerList.Clear();
+            foreach (var viewModel in items)
+            {
+                viewModel.PropertyChanged -= OnLastConnectTimeChanged;
+                viewModel.PropertyChanged += OnLastConnectTimeChanged;
+                VmServerList.Add(viewModel);
+            }
+
+            if (VmServerList.Count == 0)
+            {
+                SelectedIndex = -1;
+            }
+            else if (!string.IsNullOrEmpty(selectedId))
+            {
+                var selected = VmServerList.FirstOrDefault(x => x.Id == selectedId);
+                SelectedIndex = selected != null ? VmServerList.IndexOf(selected) : 0;
+            }
+            else
+            {
+                SelectedIndex = 0;
+            }
+
+            RaisePropertyChanged(nameof(SelectedItem));
+        }
+
 
         private ObservableCollection<ProtocolAction> _actions = new ObservableCollection<ProtocolAction>();
         public ObservableCollection<ProtocolAction> Actions
@@ -174,24 +206,12 @@ namespace _1RM.View.Launcher
             if (IoC.TryGet<LauncherWindowView>()?.IsClosing != false) return;
 
             var selectedId = SelectedItem?.Id ?? "";
-            VmServerList = new ObservableCollection<ProtocolBaseViewModel>(IoC.Get<GlobalData>().VmItemList.OrderByDescending(x => x.LastConnectTime));
-            foreach (var viewModel in VmServerList)
+            var ordered = IoC.Get<GlobalData>().VmItemList.OrderByDescending(x => x.LastConnectTime).ToList();
+            foreach (var viewModel in ordered)
             {
                 viewModel.KeywordMark = double.MinValue;
-                viewModel.PropertyChanged -= OnLastConnectTimeChanged;
-                viewModel.PropertyChanged += OnLastConnectTimeChanged;
             }
-
-            if (string.IsNullOrEmpty(selectedId) == false)
-            {
-                var s = VmServerList.FirstOrDefault(x => x.Id == selectedId);
-                if (s != null)
-                    SelectedIndex = VmServerList.IndexOf(s);
-            }
-            else
-            {
-                SelectedIndex = 0;
-            }
+            ReplaceVmServerList(ordered, selectedId);
 
             foreach (var viewModel in VmServerList)
             {
@@ -205,7 +225,7 @@ namespace _1RM.View.Launcher
         {
             if (e.PropertyName == nameof(ProtocolBaseViewModel.LastConnectTime))
             {
-                VmServerList = new ObservableCollection<ProtocolBaseViewModel>(VmServerList.OrderByDescending(x => x.LastConnectTime));
+                ReplaceVmServerList(VmServerList.OrderByDescending(x => x.LastConnectTime).ToList(), SelectedItem?.Id);
             }
         }
 
@@ -327,8 +347,9 @@ namespace _1RM.View.Launcher
 #if DEBUG
             var sw2 = new Stopwatch();
 #endif
-            VmServerList = new ObservableCollection<ProtocolBaseViewModel>(newList.OrderByDescending(x => x.KeywordMark)
-                .ThenByDescending(x => x.LastConnectTime));
+            ReplaceVmServerList(newList.OrderByDescending(x => x.KeywordMark)
+                .ThenByDescending(x => x.LastConnectTime)
+                .ToList(), SelectedItem?.Id);
             IoC.Get<LauncherWindowViewModel>().ReSetWindowHeight();
 #if DEBUG
             sw2.Stop();

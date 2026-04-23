@@ -7,9 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Resources;
-using System.Threading.Tasks;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
+using _1RM.Model.Protocol.Base;
 using Newtonsoft.Json.Linq;
 using Shawn.Utils;
 using Shawn.Utils.Wpf.Image;
@@ -19,6 +19,9 @@ namespace _1RM.Resources.Icons
 {
     public class ServerIcons
     {
+        private readonly object _loadLock = new object();
+        private bool _isLoaded;
+
         #region singleton
 
         private static ServerIcons? _uniqueInstance;
@@ -40,8 +43,22 @@ namespace _1RM.Resources.Icons
 
         private ServerIcons()
         {
-            Task.Factory.StartNew(() =>
+        }
+
+        private void EnsureLoaded()
+        {
+            if (_isLoaded)
             {
+                return;
+            }
+
+            lock (_loadLock)
+            {
+                if (_isLoaded)
+                {
+                    return;
+                }
+
                 var resourceName = this.GetType().Assembly.GetName().Name + ".g";
                 var mgr = new ResourceManager(resourceName, this.GetType().Assembly);
                 using var set = mgr.GetResourceSet(CultureInfo.CurrentCulture, true, true);
@@ -66,17 +83,30 @@ namespace _1RM.Resources.Icons
                     var bm = img.ToBitmap();
                     IconsBase64.Add(bm.ToBitmapSource().ToBase64());
                 }
-            });
+                _isLoaded = true;
+            }
         }
 
-        public List<string> IconsBase64 { get; set; } = new List<string>();
+        private List<string> _iconsBase64 = new List<string>();
+        public List<string> IconsBase64
+        {
+            get
+            {
+                EnsureLoaded();
+                return _iconsBase64;
+            }
+            set => _iconsBase64 = value;
+        }
 
         public List<BitmapSource>? _icons;
         public List<BitmapSource> Icons
         {
             get
             {
-                _icons ??= new List<BitmapSource>(IconsBase64.Select(x => Convert.FromBase64String(x).BitmapFromBytes().ToBitmapSource()));
+                EnsureLoaded();
+                _icons ??= new List<BitmapSource>(IconsBase64
+                    .Select(ProtocolBase.DecodeIconBase64)
+                    .Where(x => x != null)!);
                 return _icons;
             }
         }

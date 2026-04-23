@@ -19,6 +19,10 @@ namespace _1RM.Model.Protocol.Base
 {
     public abstract class ProtocolBase : NotifyPropertyChangedBase, IDataErrorInfo
     {
+        private static readonly object IconCacheLock = new object();
+        private static readonly Dictionary<string, string> SharedIconBase64Pool = new Dictionary<string, string>(StringComparer.Ordinal);
+        private static readonly Dictionary<string, BitmapSource?> SharedIconCache = new Dictionary<string, BitmapSource?>(StringComparer.Ordinal);
+
         [JsonIgnore] public string ServerEditorDifferentOptions => IoC.Translate("server_editor_different_options").Replace(" ", "-");
         [JsonIgnore] public static string ServerEditorStaticDifferentOptions => IoC.Translate("server_editor_different_options").Replace(" ", "-");
 
@@ -148,31 +152,71 @@ namespace _1RM.Model.Protocol.Base
             get => _iconBase64;
             set
             {
-                _iconCache = null;
-                SetAndNotifyIfChanged(ref _iconBase64, value);
-                RaisePropertyChanged(nameof(IconImg));
+                var normalized = NormalizeIconBase64(value);
+                if (SetAndNotifyIfChanged(ref _iconBase64, normalized))
+                {
+                    RaisePropertyChanged(nameof(IconImg));
+                }
             }
         }
 
-        private BitmapSource? _iconCache = null;
-        [JsonIgnore]
-        public BitmapSource? IconImg
+        public static string NormalizeIconBase64(string? iconBase64)
         {
-            get
+            if (string.IsNullOrEmpty(iconBase64))
             {
-                if (_iconCache != null)
-                    return _iconCache;
-                try
+                return string.Empty;
+            }
+
+            lock (IconCacheLock)
+            {
+                if (SharedIconBase64Pool.TryGetValue(iconBase64, out var shared))
                 {
-                    _iconCache = Convert.FromBase64String(_iconBase64).BitmapFromBytes().ToBitmapSource();
+                    return shared;
                 }
-                catch (Exception)
-                {
-                    return null;
-                }
-                return _iconCache;
+
+                SharedIconBase64Pool[iconBase64] = iconBase64;
+                return iconBase64;
             }
         }
+
+        public static BitmapSource? DecodeIconBase64(string? iconBase64)
+        {
+            iconBase64 = NormalizeIconBase64(iconBase64);
+            if (string.IsNullOrEmpty(iconBase64))
+            {
+                return null;
+            }
+
+            lock (IconCacheLock)
+            {
+                if (SharedIconCache.TryGetValue(iconBase64, out var cached))
+                {
+                    return cached;
+                }
+            }
+
+            BitmapSource? decoded = null;
+            try
+            {
+                decoded = Convert.FromBase64String(iconBase64).BitmapFromBytes().ToBitmapSource();
+            }
+            catch (Exception)
+            {
+                decoded = null;
+            }
+
+            lock (IconCacheLock)
+            {
+                if (!SharedIconCache.ContainsKey(iconBase64))
+                {
+                    SharedIconCache[iconBase64] = decoded;
+                }
+                return SharedIconCache[iconBase64];
+            }
+        }
+
+        [JsonIgnore]
+        public BitmapSource? IconImg => DecodeIconBase64(_iconBase64);
 
 
 

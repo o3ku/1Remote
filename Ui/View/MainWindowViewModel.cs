@@ -48,8 +48,11 @@ namespace _1RM.View
         public ConfigurationService ConfigurationService { get; }
         //public ServerListPageViewModel? ServerListViewModel { get; } = IoC.Get<ServerListPageViewModel>();
         //public ServerTreeViewModel ServerTreeViewModel { get; } = IoC.Get<ServerTreeViewModel>();
-        public SettingsPageViewModel SettingViewModel { get; } = IoC.Get<SettingsPageViewModel>();
-        public AboutPageViewModel AboutViewModel { get; } = IoC.Get<AboutPageViewModel>();
+        private SettingsPageViewModel? _settingViewModel;
+        public SettingsPageViewModel SettingViewModel => _settingViewModel ??= IoC.Get<SettingsPageViewModel>();
+        private AboutPageViewModel? _aboutViewModel;
+        public AboutPageViewModel AboutViewModel => _aboutViewModel ??= IoC.Get<AboutPageViewModel>();
+        public AppUpdateService UpdateService => IoC.Get<AppUpdateService>();
         private readonly GlobalData _appData;
 
 
@@ -358,7 +361,6 @@ namespace _1RM.View
                 {
                     ShowSetting = true;
                     EditorViewModel = null;
-                    IoC.Get<GeneralSettingViewModel>().AppStartAutomatically = SetSelfStartingHelper.IsSelfStart(Assert.APP_NAME);
                     if (this.View is MainWindowView v)
                         v.PopupMenu.IsOpen = false;
                 }, o => IsShownList);

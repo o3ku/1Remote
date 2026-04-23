@@ -14,7 +14,6 @@ using _1RM.Utils;
 using _1RM.Utils.PRemoteM;
 using _1RM.Service.DataSource.DAO;
 using _1RM.View.ServerView;
-using _1RM.View.Settings.General;
 using _1RM.View.Utils;
 using System.Collections.Generic;
 using _1RM.Utils.PuTTY.Model;
@@ -466,9 +465,10 @@ namespace _1RM
                 MaskLayerController.HideMask(mvm);
             }
 
-            AppStartupHelper.ProcessWhenDataLoaded(IoC.Get<GeneralSettingViewModel>());
+            AppStartupHelper.ProcessWhenDataLoaded();
             if (ConfigurationServiceObj.General.ShowRecentlySessionInTray)
                 IoC.Get<TaskTrayService>().ReloadTaskTrayContextMenu();
+            IoC.Get<AppUpdateService>().StartVersionCheckTimer();
             IoC.Get<LauncherWindowViewModel>().SetHotKey();
         }
     }

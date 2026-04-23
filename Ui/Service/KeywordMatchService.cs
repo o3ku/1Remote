@@ -58,6 +58,10 @@ namespace _1RM.Service
 
     public class KeywordMatchService
     {
+        private const int MaxCacheEntries = 1024;
+        private static readonly TimeSpan CacheTrimThreshold = TimeSpan.FromHours(6);
+        private static readonly TimeSpan CacheExpiration = TimeSpan.FromHours(2);
+
         public class Cache
         {
             public Cache(MatchCache matchCache)
@@ -106,18 +110,36 @@ namespace _1RM.Service
         {
             lock (this)
             {
-                if (_matchCaches.Any(x => x.Value.GetAccessTime() < DateTime.Now.AddHours(-24)))
+                var now = DateTime.Now;
+                var shouldTrimByAge = _matchCaches.Any(x => now - x.Value.GetAccessTime() > CacheTrimThreshold);
+                var shouldTrimByCount = _matchCaches.Count > MaxCacheEntries;
+                if (!shouldTrimByAge && !shouldTrimByCount)
                 {
-                    var kvs = _matchCaches.Where(x => x.Value.GetAccessTime() < DateTime.Now.AddHours(-12))?
-                        .OrderBy(x => x.Value.GetAccessTime())?.ToArray();
-                    if (kvs!= null)
+                    return;
+                }
+
+                var expiredKeys = _matchCaches
+                    .Where(x => now - x.Value.GetAccessTime() > CacheExpiration)
+                    .OrderBy(x => x.Value.GetAccessTime())
+                    .Select(x => x.Key)
+                    .ToArray();
+                foreach (var key in expiredKeys)
+                {
+                    _matchCaches.Remove(key);
+                }
+
+                if (_matchCaches.Count > MaxCacheEntries)
+                {
+                    var overflowKeys = _matchCaches
+                        .OrderBy(x => x.Value.GetAccessTime())
+                        .Take(_matchCaches.Count - MaxCacheEntries)
+                        .Select(x => x.Key)
+                        .ToArray();
+                    foreach (var key in overflowKeys)
                     {
-                        foreach (var kv in kvs)
-                        {
-                            _matchCaches.Remove(kv.Key);
-                        }
+                        _matchCaches.Remove(key);
                     }
-                } 
+                }
             }
         }
 

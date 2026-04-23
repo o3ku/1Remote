@@ -449,7 +449,7 @@ namespace _1RM.Controls
                 var wpen = System.Drawing.Brushes.White;
                 var gpen = System.Drawing.Brushes.LightGray;
                 int span = blockPixSize;
-                var bg = new System.Drawing.Bitmap(span * 2, span * 2);
+                using var bg = new System.Drawing.Bitmap(span * 2, span * 2);
                 using (var g = System.Drawing.Graphics.FromImage(bg))
                 {
                     g.FillRectangle(wpen, new System.Drawing.Rectangle(0, 0, bg.Width, bg.Height));
@@ -461,7 +461,7 @@ namespace _1RM.Controls
                         }
                     }
                 }
-                return new ImageBrush(bg.ToBitmapImage())
+                var brush = new ImageBrush(bg.ToBitmapImage())
                 {
                     Stretch = Stretch.UniformToFill,
                     TileMode = TileMode.Tile,
@@ -470,6 +470,10 @@ namespace _1RM.Controls
                     Viewport = new Rect(new System.Windows.Point(0, 0), new System.Windows.Point(span * 2, span * 2)),
                     ViewportUnits = BrushMappingMode.Absolute
                 };
+                if (brush.CanFreeze)
+                    brush.Freeze();
+                _chessboardBrushes[blockPixSize] = brush;
+                return brush;
             }
         }
     }
