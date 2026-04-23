@@ -74,13 +74,14 @@ namespace _1RM.View.Host
         /// </summary>
         private void RunForIntegrate()
         {
-            bool isIntegrate = Vm?.SelectedItem?.Content?.GetProtocolHostType() == ProtocolHostType.Integrate;
+            var selectedContent = Vm?.SelectedItem?.Content;
+            bool isIntegrate = selectedContent?.GetProtocolHostType() == ProtocolHostType.Integrate;
             IntPtr hWnd = IntPtr.Zero;
             if (isIntegrate)
             {
                 try
                 {
-                    hWnd = this.Vm.SelectedItem.Content.GetHostHwnd();
+                    hWnd = selectedContent?.GetHostHwnd() ?? IntPtr.Zero;
                 }
                 catch (Exception ex)
                 {

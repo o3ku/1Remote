@@ -31,7 +31,10 @@ namespace _1RM.View.Host.ProtocolHosts
         {
             try
             {
-                ((IMsRdpExtendedSettings)axHost.GetOcx()).set_Property(propertyName, ref value);
+                var extendedSettings = axHost.GetOcx() as IMsRdpExtendedSettings;
+                if (extendedSettings == null)
+                    return;
+                extendedSettings.set_Property(propertyName, ref value);
             }
             catch (Exception e)
             {
@@ -112,7 +115,10 @@ namespace _1RM.View.Host.ProtocolHosts
                 Command = new RelayCommand((o) =>
                 {
                     _rdpClient?.Focus();
-                    new MsRdpClientNonScriptableWrapper(_rdpClient.GetOcx()).SendKeys(
+                    var ocx = _rdpClient?.GetOcx();
+                    if (ocx == null)
+                        return;
+                    new MsRdpClientNonScriptableWrapper(ocx).SendKeys(
                         new int[] { 0x1d, 0x38, 0x53, 0x53, 0x38, 0x1d },
                         new bool[] { false, false, false, true, true, true, });
                 }, o => HasConnected)
@@ -213,10 +219,8 @@ namespace _1RM.View.Host.ProtocolHosts
                 var bytes = Encoding.UTF8.GetBytes(loadBalanceInfo);
                 _rdpClient.AdvancedSettings2.LoadBalanceInfo = Encoding.Unicode.GetString(bytes);
             }
-
-
-
-            var secured = (MSTSCLib.IMsTscNonScriptable)_rdpClient.GetOcx();
+            var secured = _rdpClient.GetOcx() as MSTSCLib.IMsTscNonScriptable;
+            if (secured == null) return;
             secured.ClearTextPassword = UnSafeStringEncipher.DecryptOrReturnOriginalString(_rdpSettings.Password);
             _rdpClient.FullScreenTitle = _rdpSettings.DisplayName + " - " + _rdpSettings.SubTitle;
 
@@ -323,11 +327,13 @@ namespace _1RM.View.Host.ProtocolHosts
              * DBT_DEVICEARRIVAL        0x8000      A device or piece of media has been inserted and is now available. param = A pointer to a structure identifying the device inserted. 
              */
             SimpleLogHelper.Debug($"RDP: NotifyRedirectDeviceChange Receive(0x{msg:X}, 0x{wParam:X}, 0x{lParam:X})");
+            var ocx = _rdpClient?.GetOcx();
+            var nonScriptable3 = ocx as IMsRdpClientNonScriptable3;
             if (msg == WM_DEVICECHANGE
-                && _rdpClient != null
-                && ((IMsRdpClientNonScriptable3)_rdpClient.GetOcx()).RedirectDynamicDevices)
+                && ocx != null
+                && nonScriptable3?.RedirectDynamicDevices == true)
             {
-                new MsRdpClientNonScriptableWrapper(_rdpClient.GetOcx()).NotifyRedirectDeviceChange(wParam, lParam);
+                new MsRdpClientNonScriptableWrapper(ocx).NotifyRedirectDeviceChange(wParam, lParam);
             }
         }
 
@@ -339,8 +345,10 @@ namespace _1RM.View.Host.ProtocolHosts
 
             #region Redirect
 
+            var nonScriptable3 = _rdpClient.GetOcx() as IMsRdpClientNonScriptable3;
+            if (nonScriptable3 == null) return;
             // purpose is not clear
-            ((IMsRdpClientNonScriptable3)_rdpClient.GetOcx()).RedirectDynamicDrives = true; // Specifies or retrieves whether dynamically attached Plug and Play (PnP) drives that are enumerated while in a session are available for redirection. https://docs.microsoft.com/en-us/windows/win32/termserv/imsrdpclientnonscriptable3-redirectdynamicdrives
+            nonScriptable3.RedirectDynamicDrives = true; // Specifies or retrieves whether dynamically attached Plug and Play (PnP) drives that are enumerated while in a session are available for redirection. https://docs.microsoft.com/en-us/windows/win32/termserv/imsrdpclientnonscriptable3-redirectdynamicdrives
 
             if (_rdpSettings.EnableDiskDrives == true || _rdpSettings.EnableRedirectDrivesPlugIn == true)
             {
@@ -348,7 +356,7 @@ namespace _1RM.View.Host.ProtocolHosts
                 // you must redirect disk drive if you want to redirect usb disk
                 if (_rdpSettings.EnableRedirectDrivesPlugIn == true)
                 {
-                    ((IMsRdpClientNonScriptable3)_rdpClient.GetOcx()).RedirectDynamicDevices = true; // Specifies whether dynamically attached PnP devices that are enumerated while in a session are available for redirection. https://docs.microsoft.com/en-us/windows/win32/termserv/imsrdpclientnonscriptable3-redirectdynamicdevices
+                    nonScriptable3.RedirectDynamicDevices = true; // Specifies whether dynamically attached PnP devices that are enumerated while in a session are available for redirection. https://docs.microsoft.com/en-us/windows/win32/termserv/imsrdpclientnonscriptable3-redirectdynamicdevices
                     RedirectDevice();
                 }
             }
@@ -356,11 +364,14 @@ namespace _1RM.View.Host.ProtocolHosts
             // disable local disk
             if (_rdpSettings.EnableDiskDrives == false)
             {
-                var ocx = (MSTSCLib.IMsRdpClientNonScriptable7)_rdpClient.GetOcx();
-                ocx.DriveCollection.RescanDrives(false);
-                for (int i = 0; i < ocx.DriveCollection.DriveCount; i++)
+                var nonScriptable7 = _rdpClient.GetOcx() as MSTSCLib.IMsRdpClientNonScriptable7;
+                if (nonScriptable7 != null)
                 {
-                    ocx.DriveCollection.DriveByIndex[(uint)i].RedirectionState = false;
+                    nonScriptable7.DriveCollection.RescanDrives(false);
+                    for (int i = 0; i < nonScriptable7.DriveCollection.DriveCount; i++)
+                    {
+                        nonScriptable7.DriveCollection.DriveByIndex[(uint)i].RedirectionState = false;
+                    }
                 }
             }
 
@@ -586,7 +597,11 @@ namespace _1RM.View.Host.ProtocolHosts
 
                 case ERdpFullScreenFlag.EnableFullAllScreens:
                     base.CanFullScreen = true;
-                    ((IMsRdpClientNonScriptable5)_rdpClient.GetOcx()).UseMultimon = true;
+                    var nonScriptable5 = _rdpClient.GetOcx() as IMsRdpClientNonScriptable5;
+                    if (nonScriptable5 != null)
+                    {
+                        nonScriptable5.UseMultimon = true;
+                    }
                     break;
                 case ERdpFullScreenFlag.EnableFullScreen:
                 default:

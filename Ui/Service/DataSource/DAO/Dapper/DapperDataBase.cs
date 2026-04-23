@@ -221,7 +221,10 @@ CREATE TABLE IF NOT EXISTS `{TableServer.TABLE_NAME}` (
             if (!result.IsSuccess) return result;
             try
             {
-                var ret = _dbConnection.QueryFirstOrDefault<int>($"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=@tableName", new { tableName, });
+                var connection = _dbConnection;
+                if (connection == null)
+                    return Result.Fail(info, DatabaseName, "Database connection is not available.");
+                var ret = connection.QueryFirstOrDefault<int>($"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=@tableName", new { tableName, });
                 if (ret > 0)
                     return Result.Success();
                 return Result.Fail(info, DatabaseName, $"Table {tableName} not exists!");
@@ -242,7 +245,10 @@ CREATE TABLE IF NOT EXISTS `{TableServer.TABLE_NAME}` (
                 if (!result.IsSuccess) return ResultSelects<ProtocolBase>.Fail(result.ErrorInfo);
                 try
                 {
-                    var ps = _dbConnection.Query<TableServer>(NormalizedSql($"SELECT * FROM `{TableServer.TABLE_NAME}`"))
+                    var connection = _dbConnection;
+                    if (connection == null)
+                        return ResultSelects<ProtocolBase>.Fail(info, DatabaseName, "Database connection is not available.");
+                    var ps = connection.Query<TableServer>(NormalizedSql($"SELECT * FROM `{TableServer.TABLE_NAME}`"))
                                                             .Select(x => x?.ToProtocolServerBase())
                                                             .Where(x => x != null).ToList();
                     return ResultSelects<ProtocolBase>.Success((ps as List<ProtocolBase>)!);
@@ -514,7 +520,10 @@ WHERE `{nameof(TableServer.Id)}`= @{nameof(TableServer.Id)};");
                 if (!result.IsSuccess) return ResultString.Fail(result.ErrorInfo);
                 try
                 {
-                    var config = _dbConnection?.QueryFirstOrDefault<TableConfig>(NormalizedSql($"SELECT * FROM `{TableConfig.TABLE_NAME}` WHERE `{nameof(TableConfig.Key)}` = @{nameof(TableConfig.Key)}"),
+                    var connection = _dbConnection;
+                    if (connection == null)
+                        return ResultString.Fail(info, DatabaseName, "Database connection is not available.");
+                    var config = connection.QueryFirstOrDefault<TableConfig>(NormalizedSql($"SELECT * FROM `{TableConfig.TABLE_NAME}` WHERE `{nameof(TableConfig.Key)}` = @{nameof(TableConfig.Key)}"),
                         new { Key = key, });
                     return ResultString.Success(config?.Value);
                 }

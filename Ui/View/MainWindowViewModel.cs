@@ -335,8 +335,11 @@ namespace _1RM.View
             ShowSetting = false;
             if (clearSelection)
             {
-                ActiveServerViewModel.ClearSelection();
-                ActiveServerViewModel.CmdCancelSelected.Execute();
+                if (ActiveServerViewModel is { } activeServerViewModel)
+                {
+                    activeServerViewModel.ClearSelection();
+                    activeServerViewModel.CmdCancelSelected.Execute();
+                }
             }
         }
 
@@ -422,7 +425,7 @@ namespace _1RM.View
                 return _cmdReOrder ??= new RelayCommand((o) =>
                 {
                     SetServerOrderBy(o);
-                    ActiveServerViewModel.ApplySort();
+                    ActiveServerViewModel?.ApplySort();
                     if (this.View is MainWindowView v)
                         v.PopupMenu.IsOpen = false;
                 });

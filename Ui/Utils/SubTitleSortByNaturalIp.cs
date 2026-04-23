@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using _1RM.View;
 using IPAddress = System.Net.IPAddress;
 
@@ -44,7 +41,7 @@ namespace _1RM.Utils
             {
                 bool isXIpV4 = IsValidIPv4(ipX, out var xa4);
                 bool isYIpV4 = IsValidIPv4(ipY, out var ya4);
-                if (isXIpV4 && isYIpV4)
+                if (isXIpV4 && isYIpV4 && xa4 != null && ya4 != null)
                 {
                     var keyX = GetIpV4Key(xa4, portX);
                     var keyY = GetIpV4Key(ya4, portY);
@@ -58,7 +55,7 @@ namespace _1RM.Utils
             {
                 bool isXIpV6 = IsValidIPv6(ipX, out var xa6);
                 bool isYIpV6 = IsValidIPv6(ipY, out var ya6);
-                if (isXIpV6 && isYIpV6)
+                if (isXIpV6 && isYIpV6 && xa6 != null && ya6 != null)
                 {
                     var xkey = GetIpV6Key(xa6, portX);
                     var ykey = GetIpV6Key(ya6, portY);

@@ -41,7 +41,10 @@ CREATE TABLE IF NOT EXISTS `{TableCredential.TABLE_NAME}` (
                 if (!result.IsSuccess) return ResultSelects<Credential>.Fail(result.ErrorInfo);
                 try
                 {
-                    var ps = _dbConnection.Query<TableCredential>(NormalizedSql($"SELECT * FROM `{TableCredential.TABLE_NAME}`"))
+                    var connection = _dbConnection;
+                    if (connection == null)
+                        return ResultSelects<Credential>.Fail(info, DatabaseName, "Database connection is not available.");
+                    var ps = connection.Query<TableCredential>(NormalizedSql($"SELECT * FROM `{TableCredential.TABLE_NAME}`"))
                                                             .Select(x => x.ToCredential())
                                                             .Where(x => x != null).ToList();
                     return ResultSelects<Credential>.Success((ps as List<Credential>)!);

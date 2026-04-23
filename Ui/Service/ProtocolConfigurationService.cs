@@ -170,7 +170,11 @@ namespace _1RM.Service
                     c.SelectedRunnerName = jObject["SelectedRunnerName"]!.ToString();
 
                     // 读取 Runners 数组
-                    var runners = (JArray)jObject["Runners"];
+                    var runners = jObject["Runners"] as JArray;
+                    if (runners == null)
+                    {
+                        return null;
+                    }
                     foreach (var runnerJObj in runners)
                     {
                         var runnerJson = runnerJObj.ToString();
